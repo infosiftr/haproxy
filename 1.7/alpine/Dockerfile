@@ -1,4 +1,12 @@
+#
+# NOTE: THIS DOCKERFILE IS GENERATED VIA "update.sh"
+#
+# PLEASE DO NOT EDIT IT DIRECTLY.
+#
+
 FROM alpine:3.5
+
+RUN apk add --no-cache s6 bash
 
 ENV HAPROXY_MAJOR 1.7
 ENV HAPROXY_VERSION 1.7.2
@@ -75,6 +83,18 @@ RUN set -x \
 	)" \
 	&& apk add --virtual .haproxy-rundeps $runDeps \
 	&& apk del .build-deps
+
+COPY s6-sighandler.sh /docker-s6/.s6-svscan/s6-sighandler
+RUN set -ex; \
+	mkdir -p /docker-s6/.s6-svscan /docker-s6/haproxy /docker-s6/syslogd; \
+	for target in haproxy syslogd; do \
+		ln -s /docker-s6/.s6-svscan/s6-sighandler "/docker-s6/$target/finish"; \
+	done; \
+	for target in finish SIGHUP SIGTERM SIGINT SIGUSR1 SIGUSR2; do \
+		ln -s s6-sighandler "/docker-s6/.s6-svscan/$target"; \
+	done
+COPY s6-run-syslogd.sh /docker-s6/syslogd/run
+COPY s6-run-haproxy.sh /docker-s6/haproxy/run
 
 COPY docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]

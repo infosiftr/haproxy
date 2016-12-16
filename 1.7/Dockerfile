@@ -1,3 +1,9 @@
+#
+# NOTE: THIS DOCKERFILE IS GENERATED VIA "update.sh"
+#
+# PLEASE DO NOT EDIT IT DIRECTLY.
+#
+
 FROM debian:jessie-backports
 
 RUN apt-get update \
@@ -46,6 +52,18 @@ RUN set -x \
 	&& rm -rf /usr/src/haproxy \
 	\
 	&& apt-get purge -y --auto-remove $buildDeps
+
+COPY s6-sighandler.sh /docker-s6/.s6-svscan/s6-sighandler
+RUN set -ex; \
+	mkdir -p /docker-s6/.s6-svscan /docker-s6/haproxy /docker-s6/syslogd; \
+	for target in haproxy syslogd; do \
+		ln -s /docker-s6/.s6-svscan/s6-sighandler "/docker-s6/$target/finish"; \
+	done; \
+	for target in finish SIGHUP SIGTERM SIGINT SIGUSR1 SIGUSR2; do \
+		ln -s s6-sighandler "/docker-s6/.s6-svscan/$target"; \
+	done
+COPY s6-run-syslogd.sh /docker-s6/syslogd/run
+COPY s6-run-haproxy.sh /docker-s6/haproxy/run
 
 COPY docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
