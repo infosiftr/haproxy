@@ -19,12 +19,10 @@ case "$dir/$name" in
 	*/SIGINT)
 		for svc in /docker-s6/*; do
 			if s6-svstat "$svc" &> /dev/null; then
-				s6-svc -O "$svc"
-				s6-svc -i "$svc"
+				s6-svc -iO "$svc"
 				s6-svc -wd "$svc"
 			fi
 		done
-		exec s6-svscanctl -q '/docker-s6'
 		;;
 
 	*/haproxy/finish)
@@ -38,6 +36,10 @@ case "$dir/$name" in
 		fi
 		echo "$exitCode" > '/docker-s6/haproxy/.exit-code'
 		exec s6-svscanctl -q '/docker-s6'
+		;;
+	*/syslogd/finish)
+		# syslogd doesn't clean up after itself
+		rm -f /dev/log
 		;;
 
 	*/SIGTERM)
