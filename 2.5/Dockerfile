@@ -53,6 +53,7 @@ RUN set -eux; \
 		USE_OPENSSL=1 \
 		USE_PCRE2=1 USE_PCRE2_JIT=1 \
 		USE_PROMEX=1 \
+		USE_QUIC=1 \
 		\
 		EXTRA_OBJS=" \
 		" \

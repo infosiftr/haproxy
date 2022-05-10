@@ -102,6 +102,9 @@ RUN set -eux; \
 {{ if ([ "1.8", "2.0", "2.2", "2.3" ] | index(env.version) | not) then ( -}}
 		USE_PROMEX=1 \
 {{ ) else "" end -}}
+{{ if ([ "1.8", "2.0", "2.2", "2.3", "2.4" ] | index(env.version) | not) then ( -}}
+		USE_QUIC=1 \
+{{ ) else "" end -}}
 		\
 		EXTRA_OBJS=" \
 {{ if [ "2.0", "2.2", "2.3" ] | index(env.version) then ( -}}
